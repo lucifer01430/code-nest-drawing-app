@@ -1,0 +1,22 @@
+    body {
+      background-color: #f0f2f5;
+    }
+
+    .canvas-container {
+      border: 2px solid #333;
+      border-radius: 10px;
+      background-color: white;
+      cursor: crosshair;
+    }
+
+    .controls {
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    canvas {
+      border-radius: 10px;
+      display: block;
+      width: 100%;
+      height: auto;
+    }
