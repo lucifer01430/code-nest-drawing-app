@@ -4,6 +4,13 @@ Welcome to **Drawing App - Code Nest**, a modern and responsive web application 
 
 ---
 
+
+## 📸 Live Demo
+
+🚀 [Click here to view it live](https://lucifer01430.github.io/code-nest-drawing-app/)  
+
+---
+
 ## 🚀 Features
 
 - **Intuitive Drawing Canvas**: Draw freehand with smooth brush strokes.
