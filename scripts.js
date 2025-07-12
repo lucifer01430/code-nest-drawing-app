@@ -6,25 +6,33 @@ const eraserBtn = document.getElementById("eraser");
 const clearBtn = document.getElementById("clear");
 const saveBtn = document.getElementById("save");
 
-// Better canvas resolution on all devices
-function fixCanvasResolution() {
-  const ratio = window.devicePixelRatio || 1;
-  canvas.width = canvas.offsetWidth * ratio;
-  canvas.height = canvas.offsetHeight * ratio;
-  ctx.scale(ratio, ratio);
-}
-fixCanvasResolution();
-
 let drawing = false;
 let currentColor = colorPicker.value;
 let currentSize = brushSize.value;
 let isErasing = false;
 
-// Styling for smoother lines
+// Setup canvas resolution for different devices
+function fixCanvasResolution() {
+  const ratio = window.devicePixelRatio || 1;
+  const containerWidth = canvas.parentElement.offsetWidth;
+  const canvasHeight = window.innerWidth < 576 ? 400 : 500; // responsive height
+
+  canvas.width = containerWidth * ratio;
+  canvas.height = canvasHeight * ratio;
+
+  canvas.style.width = `${containerWidth}px`;
+  canvas.style.height = `${canvasHeight}px`;
+
+  ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform before scaling
+  ctx.scale(ratio, ratio);
+}
+fixCanvasResolution();
+
+// Smooth lines
 ctx.lineJoin = "round";
 ctx.lineCap = "round";
 
-// Helpers for touch position
+// Get touch position
 function getTouchPos(touchEvent) {
   const rect = canvas.getBoundingClientRect();
   return {
@@ -33,71 +41,66 @@ function getTouchPos(touchEvent) {
   };
 }
 
-// Mouse Events
-canvas.addEventListener("mousedown", (e) => {
+// Start drawing
+function startDraw(x, y) {
   drawing = true;
   ctx.beginPath();
-  ctx.moveTo(e.offsetX, e.offsetY);
-});
+  ctx.moveTo(x, y);
+}
 
-canvas.addEventListener("mouseup", () => {
-  drawing = false;
-  ctx.beginPath();
-});
-
-canvas.addEventListener("mouseout", () => {
-  drawing = false;
-  ctx.beginPath();
-});
-
-canvas.addEventListener("mousemove", (e) => {
+// Draw line
+function drawLine(x, y) {
   if (!drawing) return;
 
   ctx.lineWidth = currentSize;
   ctx.strokeStyle = isErasing ? "#ffffff" : currentColor;
 
-  ctx.lineTo(e.offsetX, e.offsetY);
+  ctx.lineTo(x, y);
   ctx.stroke();
   ctx.beginPath();
-  ctx.moveTo(e.offsetX, e.offsetY);
-});
+  ctx.moveTo(x, y);
+}
 
-// Touch Events
+// Stop drawing
+function stopDraw() {
+  drawing = false;
+  ctx.beginPath();
+}
+
+// Mouse events
+canvas.addEventListener("mousedown", (e) => {
+  startDraw(e.offsetX, e.offsetY);
+});
+canvas.addEventListener("mousemove", (e) => {
+  drawLine(e.offsetX, e.offsetY);
+});
+canvas.addEventListener("mouseup", stopDraw);
+canvas.addEventListener("mouseout", stopDraw);
+
+// Touch events
 canvas.addEventListener("touchstart", (e) => {
   e.preventDefault();
-  drawing = true;
   const pos = getTouchPos(e);
-  ctx.beginPath();
-  ctx.moveTo(pos.x, pos.y);
-}, { passive: false });
-
-canvas.addEventListener("touchend", (e) => {
-  e.preventDefault();
-  drawing = false;
-  ctx.beginPath();
-}, { passive: false });
-
-canvas.addEventListener("touchcancel", (e) => {
-  e.preventDefault();
-  drawing = false;
-  ctx.beginPath();
+  startDraw(pos.x, pos.y);
 }, { passive: false });
 
 canvas.addEventListener("touchmove", (e) => {
   e.preventDefault();
-  if (!drawing) return;
-
   const pos = getTouchPos(e);
-  ctx.lineWidth = currentSize;
-  ctx.strokeStyle = isErasing ? "#ffffff" : currentColor;
-
-  ctx.lineTo(pos.x, pos.y);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(pos.x, pos.y);
+  drawLine(pos.x, pos.y);
 }, { passive: false });
 
-// Tools
+canvas.addEventListener("touchend", (e) => {
+  e.preventDefault();
+  stopDraw();
+}, { passive: false });
+
+canvas.addEventListener("touchcancel", (e) => {
+  e.preventDefault();
+  stopDraw();
+}, { passive: false });
+
+// Tool listeners
 colorPicker.addEventListener("change", (e) => {
   currentColor = e.target.value;
   isErasing = false;
@@ -123,7 +126,7 @@ saveBtn.addEventListener("click", () => {
   link.click();
 });
 
-// Optional: Resize fix on window resize
+// Responsive fix
 window.addEventListener("resize", () => {
   fixCanvasResolution();
 });
